@@ -10,10 +10,10 @@ namespace Jil
 	class BmpFile
 	{
 	private:
-		char* _filename;
+		const char* _filename;
 
 	public:
-		BmpFile(char* filename) : _filename(filename)
+		BmpFile(const char* filename) : _filename(filename)
 		{
 			//_filename = filename;
 		}
