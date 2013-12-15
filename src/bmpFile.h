@@ -48,22 +48,6 @@ namespace Jil
 				file.write((char*)&bitsPerPixel, 2);
 
 				// Pixel Data
-				// int pad = 0;
-				// for (int i = 0; i < size; ++i)
-				// {
-				// 	file.write((char*)&(img->_pixels[i]), 3);
-
-				// 	pad += 3;
-				// 	if ((i + i) % height == 0)
-				// 	{
-				// 		if (pad % 4 != 0)
-				// 		{
-				// 			file.write("\0\0\0\0", 4 - (pad % 4));
-				// 		}
-				// 		pad = 0;
-				// 	}
-				// }
-
 				int rowSize = 4 * ((bitsPerPixel * width + 31) / 32);
 				char* rowStr = new char[rowSize];
 				for (int row = 0; row < height; ++row)

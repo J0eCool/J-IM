@@ -36,13 +36,14 @@ namespace Jil
 			{
 				for (int j = yLo; j < yHi; ++j)
 				{
-					float dist = distance(x, y, i, j);
-					if (dist <= r)
+					float dist2 = distance2(x, y, i, j);
+					if (dist2 <= r * r)
 					{
 						_img->setPixel(i, j, c);
 					}
-					else if (dist <= r + 1)
+					else if (dist2 <= (r + 1) * (r + 1))
 					{
+						float dist = sqrt(dist2);
 						Color blend = c;
 						blend._a = (int)(c._a * (1.0f - (dist - r)));
 						_img->setPixel(i, j, blend);

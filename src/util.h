@@ -57,10 +57,14 @@ namespace Jil
 		return rand() % (hi - lo) + lo;
 	}
 
-	float distance(float x1, float y1, float x2, float y2)
+	float distance2(float x1, float y1, float x2, float y2)
 	{
 		float dx = x2 - x1;
 		float dy = y2 - y1;
-		return sqrt(dx * dx + dy * dy);
+		return dx * dx + dy * dy;
+	}
+	float distance(float x1, float y1, float x2, float y2)
+	{
+		return sqrt(distance2(x1, y1, x2, y2));
 	}
 }
