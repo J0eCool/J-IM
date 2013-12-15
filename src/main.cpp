@@ -18,13 +18,13 @@ int main(int argc, char** argv)
 	{
 		int x = randInt(-10, 90);
 		int y = randInt(-10, 140);
-		int w = randInt(10, 40);
+		int w = randInt(5, 20);
 		int h = randInt(10, 50);
 
 		int r = randInt(0x80, 0xff);
 		int g = randInt(0x80, 0xff);
 		int b = randInt(0x80, 0xff);
-		draw.rect(x, y, w, h, Color(r, g, b, 0x80));
+		draw.circle(x, y, w, Color(r, g, b, 0x80));
 	}
 
 	BmpFile file("helloWorld.bmp");

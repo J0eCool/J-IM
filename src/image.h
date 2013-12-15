@@ -27,7 +27,8 @@ namespace Jil
 		}
 		void setPixel(int x, int y, Color const& c)
 		{
-			_pixels[x + y * _width] = c;
+			Color* pix = _pixels + (x + y * _width);
+			*pix = pix->blend(c);
 		}
 	};
 }
