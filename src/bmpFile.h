@@ -33,7 +33,7 @@ namespace Jil
 				short colorPlanes = 1;
 				short bitsPerPixel = 24;
 
-
+				// Header reference: http://en.wikipedia.org/wiki/BMP_file_format
 				// BMP header
 				file.write("BM", 2);
 				file.write((char*)&size, 4);
