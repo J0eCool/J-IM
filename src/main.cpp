@@ -16,19 +16,20 @@ void circleTest(const char* filename)
 	float imgAR = randInt(6, 20) / 10.0f;
 
 	float rMid = imgDim / randInt(6, 18);
-
+	int a = randFloat() < 0.8f ? 0x10 * randInt(0x2, 0x10) : 0xff;
+	int nCirc = 2 * imgDim * 0xff / ((a / 2 + 0x80) * sqrt(rMid) * randFloat(0.5f, 3.5f));
 
 	Image img(imgDim, (int)(imgDim / imgAR));
 
 	Draw draw(&img);
-	for (int i = 0; i < 350; i++)
+	for (int i = 0; i < nCirc; i++)
 	{
-		int x = randInt(0, img._width);
-		int y = randInt(0, img._height);
-		int r = randInt(5, 20);
+		int x = randInt(-rMid, img._width + rMid);
+		int y = randInt(-rMid, img._height + rMid);
+		int r = randInt(rMid / 2, 2 * rMid);
 
 		Color c = Color::HSV(randFloat(0.0f, 360.0f), randFloat());
-		c._a = 0x10;
+		c._a = a;
 		draw.circle(x, y, r, c);
 	}
 
@@ -42,7 +43,7 @@ int main(int argc, char** argv)
 	srand(time(0));
 
 	const char* testType = (argc > 1 ? argv[1] : "circle");
-	int nFiles = (argc > 2 ? atoi(argv[2]) : 100);
+	int nFiles = (argc > 2 ? atoi(argv[2]) : 35);
 
 	DIR* outDir = opendir("./out");
 	if (!outDir)
