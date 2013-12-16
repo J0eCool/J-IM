@@ -1,6 +1,7 @@
 #include "image.h"
 #include "draw.h"
 #include "bmpFile.h"
+#include "vector.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -28,7 +29,7 @@ void circleTest(const char* filename)
 		int y = randInt(-rMid, img._height + rMid);
 		int r = randInt(rMid / 2, 2 * rMid);
 
-		Color c = Color::HSV(randFloat(0.0f, 360.0f), randFloat());
+		Color c = Color::randomColor();
 		c._a = a;
 		draw.circle(x, y, r, c);
 	}
@@ -56,9 +57,28 @@ void rectTest(const char* filename)
 		int w = randInt(rMid / 2, 2 * rMid);
 		int h = randInt(rMid / 2, 2 * rMid);
 
-		Color c = Color::HSV(randFloat(0.0f, 360.0f), randFloat());
+		Color c = Color::randomColor();
 		c._a = a;
 		draw.rect(x, y, w, h, c);
+	}
+
+	BmpFile file(filename);
+	file.write(&img);
+}
+
+void lineTest(const char* filename)
+{
+	Image img(500, 500);
+
+	Draw draw(&img);
+
+	for (int i = 0; i < 150; i++)
+	{
+		Vec2 A(randFloat(50, 450), randFloat(50, 450));
+		Vec2 B(randFloat(50, 450), randFloat(50, 450));
+		Color c = Color::randomColor();
+		float r = randFloat(1.0f, 5.0f);
+		draw.line(A, B, c, r);
 	}
 
 	BmpFile file(filename);
@@ -77,14 +97,15 @@ int main(int argc, char** argv)
 	clock_t startClock = clock();
 	srand(time(0));
 
-	std::string testType = (argc > 1 ? argv[1] : "circle");
-
-	const int kNumTests = 2;
+	const int kNumTests = 3;
 	Test validTests[kNumTests] =
 		{
 			{"circle", circleTest, 25},
 			{"rect", rectTest, 45},
+			{"line", lineTest, 25},
 		};
+
+	std::string testType = (argc > 1 ? argv[1] : "line");
 
 	Test* test = 0;
 	for (int i = 0; i < kNumTests; i++)

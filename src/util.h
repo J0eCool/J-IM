@@ -6,6 +6,14 @@
 namespace Jil
 {
 	template <typename T>
+	void swap(T& a, T& b)
+	{
+		T& t = a;
+		a = b;
+		b = t;
+	}
+
+	template <typename T>
 	T max(T const& a, T const& b)
 	{
 		if (a < b)
@@ -66,5 +74,28 @@ namespace Jil
 	float distance(float x1, float y1, float x2, float y2)
 	{
 		return sqrt(distance2(x1, y1, x2, y2));
+	}
+
+	int sign(float n)
+	{
+		if (n < 0.0f)
+		{
+			return -1;
+		}
+		if (n > 0.0f)
+		{
+			return 1;
+		}
+		return 0;
+	}
+
+	int forceSign(float n)
+	{
+		int s = sign(n);
+		if (s == 0)
+		{
+			s = 1;
+		}
+		return s;
 	}
 }

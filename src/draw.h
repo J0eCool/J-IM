@@ -1,5 +1,8 @@
 #include "util.h"
 #include "image.h"
+#include "vector.h"
+
+#include <iostream>
 
 namespace Jil
 {
@@ -47,6 +50,67 @@ namespace Jil
 						Color blend = c;
 						blend._a = (int)(c._a * (1.0f - (dist - r)));
 						_img->setPixel(i, j, blend);
+					}
+				}
+			}
+		}
+
+		void line(Vec2 const& start, Vec2 const& end, Color color, float size = 2.0f)
+		{
+			float rad2 = size * size / 4;
+			int xLo = max((int)(min(start.x, end.x) - size), 0);
+			int xHi = min((int)(max(start.x, end.x) + size), _img->_width);
+			int yLo = max((int)(min(start.y, end.y) - size), 0);
+			int yHi = min((int)(max(start.y, end.y) + size), _img->_height);
+
+			Vec2 delta = end - start;
+			float deltaDist = delta.length();
+			Vec2 dir = delta.unit();
+
+			int xStep = forceSign(delta.x);
+			int xStart = xStep != -1 ? xLo : xHi;
+			int xEnd = xStep != -1 ? xHi : xLo;
+
+			int yStep = forceSign(delta.y);
+			int yStart = yStep != -1 ? yLo : yHi;
+			int yEnd = yStep != -1 ? yHi : yLo;
+
+			int lastY = yStart;
+			int prevLastY = yStart;
+			for (int i = xStart; i != xEnd; i += xStep)
+			{
+				int drawStartY = -1;
+				bool hasDrawn = false;
+				for (int j = lastY; j != yEnd; j += yStep)
+				{
+					Vec2 C(i, j);
+					Vec2 D = lerp((C - start).dot(dir) / deltaDist, start, end);
+					float dist2 = (C - D).length2();
+
+					if (dist2 <= rad2)
+					{
+						Color c = color;
+						c._a = lerp(dist2 / rad2, (int)color._a, 0);
+						_img->setPixel(i, j, c);
+						hasDrawn = true;
+
+						if (drawStartY == -1)
+						{
+							if (!hasDrawn)
+							{
+								j -= yStep * (size * 2 + 1);
+							}
+							else
+							{
+								drawStartY = j;
+							}
+						}
+					}
+					else if (drawStartY != -1)
+					{
+						lastY = prevLastY;
+						prevLastY = drawStartY;
+						break;
 					}
 				}
 			}

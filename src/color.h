@@ -77,5 +77,10 @@ namespace Jil
 
 			return color;
 		}
+
+		static Color randomColor()
+		{
+			return HSV(randFloat(0.0f, 360.0f), randFloat());
+		}
 	};
 }
