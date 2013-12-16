@@ -19,23 +19,35 @@ struct TestParams
 	int alpha;
 	int count;
 	float midWeight;
+	float midBlur;
 
 	static TestParams getRandom()
 	{
 		TestParams params;
 
 		float imgAR = randBool(0.5f) ? randInt(6, 20) / 10.0f : 1;
-		params.width = (int)pow(2.0f, randInt(5, 12));
+		params.width = (int)pow(2.0f, randInt(6, 12));
 		params.height = (int)(params.width / imgAR);
 
 		params.midSize = params.width / randInt(6, 18);
-		params.alpha = randFloat() < 0.8f ? 0x10 * randInt(0x2, 0x10) : 0xff;
+		params.alpha = randBool(0.75f) ? 0x10 * randInt(0x4, 0x10) : 0xff;
 		params.count = 2 * params.width * 0xff
 			/ ((params.alpha / 2 + 0x80) * sqrt(params.midSize) * randFloat(0.5f, 3.5f));
 		params.midWeight = randInt(-8, 9);
+		params.midBlur = randBool(0.7f) ? 1.0f : randInt(2, 9);
 
 		return params;
 	}
+
+	int randSizeX() { return randInt(-midSize, width + midSize); }
+	int randSizeY() { return randInt(-midSize, height + midSize); }
+	int randWeightX() { return randInt(-midWeight, width + midWeight); }
+	int randWeightY() { return randInt(-midWeight, height + midWeight); }
+
+	int randSize() { return randInt(midSize / 2, 2 * midSize); }
+	int randWeight() { return randInt(midWeight / 2, 2 * midWeight); }
+	int randBlur() { return midBlur == 1.0f ? 1.0f :
+		randInt(midBlur / 2, 2 * midBlur); }
 };
 
 
@@ -47,14 +59,15 @@ void circleTest(const char* filename)
 
 	for (int i = 0; i < params.count; i++)
 	{
-		int x = randInt(-params.midSize, img._width + params.midSize);
-		int y = randInt(-params.midSize, img._height + params.midSize);
-		int r = randInt(params.midSize / 2, 2 * params.midSize);
-		float l = randFloat(params.midWeight / 2, 2 * params.midWeight);
+		int x = params.randSizeX();
+		int y = params.randSizeY();
+		int r = params.randSize();
+		float l = params.randWeight();
+		float b = params.randBlur();
 
 		Color c = Color::randomColor();
 		c._a = params.alpha;
-		draw.circle(x, y, r, c, l);
+		draw.circle(x, y, r, c, l, b);
 	}
 
 	BmpFile file(filename);
@@ -69,14 +82,15 @@ void rectTest(const char* filename)
 
 	for (int i = 0; i < params.count; i++)
 	{
-		int x = randInt(-params.midSize, img._width + params.midSize);
-		int y = randInt(-params.midSize, img._height + params.midSize);
-		int w = randInt(params.midSize / 2, 2 * params.midSize);
-		int h = randInt(params.midSize / 2, 2 * params.midSize);
+		int x = params.randSizeX();
+		int y = params.randSizeY();
+		int w = params.randSize();
+		int h = params.randSize();
+		float l = params.randWeight();
 
 		Color c = Color::randomColor();
 		c._a = params.alpha;
-		draw.rect(x, y, w, h, c);
+		draw.rect(x, y, w, h, c, l);
 	}
 
 	BmpFile file(filename);
@@ -85,17 +99,22 @@ void rectTest(const char* filename)
 
 void lineTest(const char* filename)
 {
-	Image img(500, 500);
-
+	TestParams params = TestParams::getRandom();
+	Image img(params.width, params.height);
 	Draw draw(&img);
 
-	for (int i = 0; i < 150; i++)
+	for (int i = 0; i < params.count; i++)
 	{
-		Vec2 A(randFloat(50, 450), randFloat(50, 450));
-		Vec2 B(randFloat(50, 450), randFloat(50, 450));
+		Vec2 A(params.randWeightX(),
+			params.randWeightY());
+		Vec2 B(params.randWeightX(),
+			params.randWeightY());
+		float l = fabs(params.randWeight());
+		float b = params.randBlur();
+
 		Color c = Color::randomColor();
-		float r = randFloat(1.0f, 5.0f);
-		draw.line(A, B, c, r);
+		c._a = params.alpha;
+		draw.line(A, B, c, l, b);
 	}
 
 	BmpFile file(filename);
