@@ -52,8 +52,11 @@ namespace Jil
 	}
 	float randFloat(float lo, float hi)
 	{
-		//return randFloat() * (hi - lo) + lo;
 		return lerp(randFloat(), lo, hi);
+	}
+	float randBool(float trueProb)
+	{
+		return randFloat() <= trueProb;
 	}
 
 	int randInt(int lo, int hi)

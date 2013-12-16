@@ -29,27 +29,45 @@ namespace Jil
 			}
 		}
 
-		void circle(int x, int y, int r, Color c)
+		void circle(int x, int y, int r, Color c, float lineWeight = 0.0f)
 		{
-			int xLo = max(x - r - 1, 0);
-			int xHi = min(x + r + 1, _img->_width);
-			int yLo = max(y - r - 1, 0);
-			int yHi = min(y + r + 1, _img->_height);
+			lineWeight = max(lineWeight, 0.0f);
+			float rad2 = lineWeight * lineWeight / 4;
+			float r2 = r * r;
+			int xLo = max(x - r - (int)(lineWeight + 1), 0);
+			int xHi = min(x + r + (int)(lineWeight + 1), _img->_width);
+			int yLo = max(y - r - (int)(lineWeight + 1), 0);
+			int yHi = min(y + r + (int)(lineWeight + 1), _img->_height);
 			for (int i = xLo; i < xHi; ++i)
 			{
 				for (int j = yLo; j < yHi; ++j)
 				{
-					float dist2 = distance2(x, y, i, j);
-					if (dist2 <= r * r)
+					if (lineWeight <= 0.0f)
 					{
-						_img->setPixel(i, j, c);
+						float dist2 = distance2(x, y, i, j);
+						if (dist2 <= r2)
+						{
+							_img->setPixel(i, j, c);
+						}
+						else if (dist2 <= (r + 1) * (r + 1))
+						{
+							float dist = sqrt(dist2);
+							Color blend = c;
+							blend._a = (int)(c._a * (1.0f - (dist - r)));
+							_img->setPixel(i, j, blend);
+						}
 					}
-					else if (dist2 <= (r + 1) * (r + 1))
+					else
 					{
-						float dist = sqrt(dist2);
-						Color blend = c;
-						blend._a = (int)(c._a * (1.0f - (dist - r)));
-						_img->setPixel(i, j, blend);
+						float dist = distance(x, y, i, j);
+						float d = fabs(dist - r);
+						if (d <= lineWeight / 2)
+						{
+							Color blend = c;
+							blend._a = lerp(d / lineWeight, (int)c._a, 0);
+							//blend._a = 0xff;
+							_img->setPixel(i, j, blend);
+						}
 					}
 				}
 			}

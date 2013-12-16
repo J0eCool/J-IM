@@ -11,27 +11,50 @@
 
 using namespace Jil;
 
+struct TestParams
+{
+	int width;
+	int height;
+	float midSize;
+	int alpha;
+	int count;
+	float midWeight;
+
+	static TestParams getRandom()
+	{
+		TestParams params;
+
+		float imgAR = randBool(0.5f) ? randInt(6, 20) / 10.0f : 1;
+		params.width = (int)pow(2.0f, randInt(5, 12));
+		params.height = (int)(params.width / imgAR);
+
+		params.midSize = params.width / randInt(6, 18);
+		params.alpha = randFloat() < 0.8f ? 0x10 * randInt(0x2, 0x10) : 0xff;
+		params.count = 2 * params.width * 0xff
+			/ ((params.alpha / 2 + 0x80) * sqrt(params.midSize) * randFloat(0.5f, 3.5f));
+		params.midWeight = randInt(-8, 9);
+
+		return params;
+	}
+};
+
+
 void circleTest(const char* filename)
 {
-	int imgDim = (int)pow(1.5f, randInt(10, 20));
-	float imgAR = randInt(6, 20) / 10.0f;
-
-	float rMid = imgDim / randInt(6, 18);
-	int a = randFloat() < 0.8f ? 0x10 * randInt(0x2, 0x10) : 0xff;
-	int nCirc = 2 * imgDim * 0xff / ((a / 2 + 0x80) * sqrt(rMid) * randFloat(0.5f, 3.5f));
-
-	Image img(imgDim, (int)(imgDim / imgAR));
-
+	TestParams params = TestParams::getRandom();
+	Image img(params.width, params.height);
 	Draw draw(&img);
-	for (int i = 0; i < nCirc; i++)
+
+	for (int i = 0; i < params.count; i++)
 	{
-		int x = randInt(-rMid, img._width + rMid);
-		int y = randInt(-rMid, img._height + rMid);
-		int r = randInt(rMid / 2, 2 * rMid);
+		int x = randInt(-params.midSize, img._width + params.midSize);
+		int y = randInt(-params.midSize, img._height + params.midSize);
+		int r = randInt(params.midSize / 2, 2 * params.midSize);
+		float l = randFloat(params.midWeight / 2, 2 * params.midWeight);
 
 		Color c = Color::randomColor();
-		c._a = a;
-		draw.circle(x, y, r, c);
+		c._a = params.alpha;
+		draw.circle(x, y, r, c, l);
 	}
 
 	BmpFile file(filename);
@@ -40,25 +63,19 @@ void circleTest(const char* filename)
 
 void rectTest(const char* filename)
 {
-	int imgDim = (int)pow(1.5f, randInt(10, 20));
-	float imgAR = randInt(6, 20) / 10.0f;
-
-	float rMid = imgDim / randInt(6, 18);
-	int a = randFloat() < 0.8f ? 0x10 * randInt(0x2, 0x10) : 0xff;
-	int nCirc = 2 * imgDim * 0xff / ((a / 2 + 0x80) * sqrt(rMid) * randFloat(0.5f, 3.5f));
-
-	Image img(imgDim, (int)(imgDim / imgAR));
-
+	TestParams params = TestParams::getRandom();
+	Image img(params.width, params.height);
 	Draw draw(&img);
-	for (int i = 0; i < nCirc; i++)
+
+	for (int i = 0; i < params.count; i++)
 	{
-		int x = randInt(-rMid, img._width + rMid);
-		int y = randInt(-rMid, img._height + rMid);
-		int w = randInt(rMid / 2, 2 * rMid);
-		int h = randInt(rMid / 2, 2 * rMid);
+		int x = randInt(-params.midSize, img._width + params.midSize);
+		int y = randInt(-params.midSize, img._height + params.midSize);
+		int w = randInt(params.midSize / 2, 2 * params.midSize);
+		int h = randInt(params.midSize / 2, 2 * params.midSize);
 
 		Color c = Color::randomColor();
-		c._a = a;
+		c._a = params.alpha;
 		draw.rect(x, y, w, h, c);
 	}
 
