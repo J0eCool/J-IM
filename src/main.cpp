@@ -39,19 +39,60 @@ struct TestParams
 		return params;
 	}
 
-	int randSizeX() { return randInt(-midSize, width + midSize); }
-	int randSizeY() { return randInt(-midSize, height + midSize); }
-	int randWeightX() { return randInt(-midWeight, width + midWeight); }
-	int randWeightY() { return randInt(-midWeight, height + midWeight); }
+	int randSizeX() const { return randInt(-midSize, width + midSize); }
+	int randSizeY() const { return randInt(-midSize, height + midSize); }
+	int randWeightX() const { return randInt(-midWeight, width + midWeight); }
+	int randWeightY() const { return randInt(-midWeight, height + midWeight); }
 
-	int randSize() { return randInt(midSize / 2, 2 * midSize); }
-	int randWeight() { return randInt(midWeight / 2, 2 * midWeight); }
-	int randBlur() { return midBlur == 1.0f ? 1.0f :
+	int randSize() const { return randInt(midSize / 2, 2 * midSize); }
+	int randWeight() const { return randInt(midWeight / 2, 2 * midWeight); }
+	int randBlur() const { return midBlur == 1.0f ? 1.0f :
 		randInt(midBlur / 2, 2 * midBlur); }
 };
 
+typedef void (*drawFuncType)(Draw&, TestParams const&);
 
-void circleTest(const char* filename)
+void drawCircle(Draw& draw, TestParams const& params)
+{
+	int x = params.randSizeX();
+	int y = params.randSizeY();
+	int r = params.randSize();
+	float l = params.randWeight();
+	float b = params.randBlur();
+
+	Color c = Color::randomColor();
+	c._a = params.alpha;
+	draw.circle(x, y, r, c, l, b);	
+}
+
+void drawRect(Draw& draw, TestParams const& params)
+{
+	int x = params.randSizeX();
+	int y = params.randSizeY();
+	int w = params.randSize();
+	int h = params.randSize();
+	float l = params.randWeight();
+
+	Color c = Color::randomColor();
+	c._a = params.alpha;
+	draw.rect(x, y, w, h, c, l);
+}
+
+void drawLine(Draw& draw, TestParams const& params)
+{
+	Vec2 A(params.randWeightX(),
+		params.randWeightY());
+	Vec2 B(params.randWeightX(),
+		params.randWeightY());
+	float l = fabs(params.randWeight());
+	float b = params.randBlur();
+
+	Color c = Color::randomColor();
+	c._a = params.alpha;
+	draw.line(A, B, c, l, b);
+}
+
+void runTest(const char* filename, drawFuncType drawFuncs[], int nFuncs = 1)
 {
 	TestParams params = TestParams::getRandom();
 	Image img(params.width, params.height);
@@ -59,69 +100,41 @@ void circleTest(const char* filename)
 
 	for (int i = 0; i < params.count; i++)
 	{
-		int x = params.randSizeX();
-		int y = params.randSizeY();
-		int r = params.randSize();
-		float l = params.randWeight();
-		float b = params.randBlur();
-
-		Color c = Color::randomColor();
-		c._a = params.alpha;
-		draw.circle(x, y, r, c, l, b);
+		drawFuncType func = drawFuncs[randInt(0, nFuncs)];
+		func(draw, params);
 	}
 
 	BmpFile file(filename);
 	file.write(&img);
+}
+
+void circleTest(const char* filename)
+{
+	drawFuncType funcs[1] = { drawCircle };
+	runTest(filename, funcs);
 }
 
 void rectTest(const char* filename)
 {
-	TestParams params = TestParams::getRandom();
-	Image img(params.width, params.height);
-	Draw draw(&img);
+	drawFuncType funcs[1] = { drawRect };
+	runTest(filename, funcs);
 
-	for (int i = 0; i < params.count; i++)
-	{
-		int x = params.randSizeX();
-		int y = params.randSizeY();
-		int w = params.randSize();
-		int h = params.randSize();
-		float l = params.randWeight();
-
-		Color c = Color::randomColor();
-		c._a = params.alpha;
-		draw.rect(x, y, w, h, c, l);
-	}
-
-	BmpFile file(filename);
-	file.write(&img);
 }
 
 void lineTest(const char* filename)
 {
-	TestParams params = TestParams::getRandom();
-	Image img(params.width, params.height);
-	Draw draw(&img);
-
-	for (int i = 0; i < params.count; i++)
-	{
-		Vec2 A(params.randWeightX(),
-			params.randWeightY());
-		Vec2 B(params.randWeightX(),
-			params.randWeightY());
-		float l = fabs(params.randWeight());
-		float b = params.randBlur();
-
-		Color c = Color::randomColor();
-		c._a = params.alpha;
-		draw.line(A, B, c, l, b);
-	}
-
-	BmpFile file(filename);
-	file.write(&img);
+	drawFuncType funcs[1] = { drawLine };
+	runTest(filename, funcs);
 }
 
-struct Test
+void mixedTest(const char* filename)
+{
+	const int kNumFuncs = 3;
+	drawFuncType funcs[3] = { drawCircle, drawRect, drawLine };
+	runTest(filename, funcs, kNumFuncs);
+}
+
+struct TestData
 {
 	const char* name;
 	void (*function)(const char*);
@@ -133,17 +146,18 @@ int main(int argc, char** argv)
 	clock_t startClock = clock();
 	srand(time(0));
 
-	const int kNumTests = 3;
-	Test validTests[kNumTests] =
+	const int kNumTests = 4;
+	TestData validTests[kNumTests] =
 		{
 			{"circle", circleTest, 25},
 			{"rect", rectTest, 45},
 			{"line", lineTest, 25},
+			{"mixed", mixedTest, 50},
 		};
 
 	std::string testType = (argc > 1 ? argv[1] : "line");
 
-	Test* test = 0;
+	TestData* test = 0;
 	for (int i = 0; i < kNumTests; i++)
 	{
 		if (testType == validTests[i].name)
