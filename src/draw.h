@@ -111,24 +111,29 @@ namespace Jil
 			float dx = delta.x == 0.0f ? 0.000001f : delta.x;
 			float m = delta.y / dx;
 			float b = start.y - m * start.x;
+			float absM = max(fabs(m), sqrt(2.0f));
 
-			for (int i = xLo; i <= xHi; ++i)
+			for (int i = xLo; i < xHi; ++i)
 			{
 				float yMid = m * i + b;
-				int yStart = max(yMid - 4 * rad, (float)yLo);
-				int yEnd = min(yMid + 4 * rad, (float)yHi);
-				for (int j = yStart; j <= yEnd; ++j)
+
+				int yStart = max(yMid - absM * rad, (float)yLo);
+				int yEnd = min(yMid + absM * rad + 1, (float)yHi);
+				for (int j = yStart; j < yEnd; ++j)
 				{
-						_img->blendPixel(i, j, Color(0xff,0,0));
+						// _img->blendPixel(i, j, Color(0xff,0,0));
+						// _img->blendPixel(i, j, Color(0,0,0xff,
+						// 	lerp((float)(i - xLo) / (xHi - xLo), 0, 0xff)));
 					Vec2 C(i, j);
 					Vec2 D = lerp((C - start).dot(dir) / deltaDist, start, end);
 					float dist = (C - D).length();
 
-					//if (dist <= rad)
+					if (dist <= rad)
 					{
 						Color c = color;
 						c._a = lerp((dist - size / 2) / blur, (int)color._a, 0);
-						_img->blendPixel(i, j, Color(0xff));
+						// _img->blendPixel(i, j, Color(0xff));
+						_img->blendPixel(i, j, c);
 					}
 				}
 			}

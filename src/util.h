@@ -22,6 +22,11 @@ namespace Jil
 		}
 		return a;
 	}
+	template <typename T>
+	T max(T const& a, T const& b, T const& c)
+	{
+		return max(max(a, b), c);
+	}
 
 	template <typename T>
 	T min(T const& a, T const& b)
