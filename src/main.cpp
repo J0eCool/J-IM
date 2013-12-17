@@ -33,6 +33,7 @@ struct TestParams
 		params.alpha = randBool(0.75f) ? 0x10 * randInt(0x4, 0x10) : 0xff;
 		params.count = 2 * params.width * 0xff
 			/ ((params.alpha / 2 + 0x80) * sqrt(params.midSize) * randFloat(0.5f, 3.5f));
+		params.count = 1;
 		params.midWeight = randInt(-8, 9);
 		params.midBlur = randBool(0.7f) ? 1.0f : randInt(2, 9);
 

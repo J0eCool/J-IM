@@ -90,8 +90,13 @@ namespace Jil
 			}
 		}
 
-		void line(Vec2 const& start, Vec2 const& end, Color color, float size = 2.0f, float blur = 1.0f)
+		void line(Vec2 start, Vec2 end, Color color, float size = 2.0f, float blur = 1.0f)
 		{
+			if (start.x > end.x)
+			{
+				swap(start, end);
+			}
+
 			float rad = size / 2 + blur + 1;
 			int xLo = max((int)(min(start.x, end.x) - rad), 0);
 			int xHi = min((int)(max(start.x, end.x) + rad), _img->_width);
@@ -102,55 +107,28 @@ namespace Jil
 			float deltaDist = delta.length();
 			Vec2 dir = delta.unit();
 
-			int xStep = forceSign(delta.x);
-			int xStart = xStep != -1 ? xLo : xHi;
-			int xEnd = xStep != -1 ? xHi : xLo;
+			// y = mx + b
+			float dx = delta.x == 0.0f ? 0.000001f : delta.x;
+			float m = delta.y / dx;
+			float b = start.y - m * start.x;
 
-			int yStep = forceSign(delta.y);
-			int yStart = yStep != -1 ? yLo : yHi;
-			int yEnd = yStep != -1 ? yHi : yLo;
-
-			int lastY = yStart;
-			int prevLastY = yStart;
-			for (int i = xStart; (xEnd - i) * xStep >= 0; i += xStep)
+			for (int i = xLo; i <= xHi; ++i)
 			{
-				int drawStartY = -1;
-				bool hasDrawn = false;
-				for (int j = lastY; (yEnd - j) * yStep >= 0; j += yStep)
+				float yMid = m * i + b;
+				int yStart = max(yMid - 4 * rad, (float)yLo);
+				int yEnd = min(yMid + 4 * rad, (float)yHi);
+				for (int j = yStart; j <= yEnd; ++j)
 				{
-					if (!_img->inBounds(i, j))
-					{
-						break;
-					}
-
+						_img->blendPixel(i, j, Color(0xff,0,0));
 					Vec2 C(i, j);
 					Vec2 D = lerp((C - start).dot(dir) / deltaDist, start, end);
 					float dist = (C - D).length();
 
-					if (dist <= rad)
+					//if (dist <= rad)
 					{
 						Color c = color;
 						c._a = lerp((dist - size / 2) / blur, (int)color._a, 0);
-						_img->blendPixel(i, j, c);
-						hasDrawn = true;
-
-						if (drawStartY == -1)
-						{
-							if (!hasDrawn)
-							{
-								j -= yStep * (size * 2 + 1);
-							}
-							else
-							{
-								drawStartY = j;
-							}
-						}
-					}
-					else if (drawStartY != -1)
-					{
-						lastY = prevLastY;
-						prevLastY = drawStartY;
-						break;
+						_img->blendPixel(i, j, Color(0xff));
 					}
 				}
 			}
