@@ -53,6 +53,10 @@ namespace Jil
 		{
 			return x * other.x + y * other.y;
 		}
+		float cross(Vec2 const& other) const
+		{
+			return x * other.y - y * other.x;
+		}
 
 		static Vec2 fromAngle(float angle, float length = 1.0f)
 		{

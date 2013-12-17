@@ -20,6 +20,7 @@ struct TestParams
 	int count;
 	float midWeight;
 	float midBlur;
+	bool flag;
 
 	static TestParams getRandom()
 	{
@@ -36,13 +37,17 @@ struct TestParams
 		params.midWeight = randInt(-8, 9);
 		params.midBlur = randBool(0.7f) ? 1.0f : randInt(2, 9);
 
+		params.flag = randBool(0.5f);
+
 		return params;
 	}
 
 	int randSizeX() const { return randInt(-midSize, width + midSize); }
 	int randSizeY() const { return randInt(-midSize, height + midSize); }
+	Vec2 randSizeVec() const { return Vec2(randSizeX(), randSizeY()); }
 	int randWeightX() const { return randInt(-midWeight, width + midWeight); }
 	int randWeightY() const { return randInt(-midWeight, height + midWeight); }
+	Vec2 randWeightVec() const { return Vec2(randWeightX(), randWeightY()); }
 
 	int randSize() const { return randInt(midSize / 2, 2 * midSize); }
 	int randWeight() const { return randInt(midWeight / 2, 2 * midWeight); }
@@ -80,10 +85,8 @@ void drawRect(Draw& draw, TestParams& params)
 
 void drawLine(Draw& draw, TestParams& params)
 {
-	Vec2 A(params.randWeightX(),
-		params.randWeightY());
-	Vec2 B(params.randWeightX(),
-		params.randWeightY());
+	Vec2 A(params.randWeightVec());
+	Vec2 B(params.randWeightVec());
 	float l = fabs(params.randWeight());
 	float b = params.randBlur();
 
@@ -94,13 +97,23 @@ void drawLine(Draw& draw, TestParams& params)
 
 void drawPoly(Draw& draw, TestParams& params)
 {
-	params.count = 1;
-	Vec2 center = Vec2(params.width / 2, params.height / 2);
+	Vec2 center = params.randSizeVec();
+	float ang = randFloat(0.0f, 2 * PI);
+	int sides = randInt(3, 15);
+	float size = params.randSize();
+	Polygon p;
+	if (params.flag)
+	{
+		p = Polygon::random(sides, center, size);
+	}
+	else
+	{
+		p = Polygon::regular(sides, center, size, ang);
+	}
 
 	Color c = Color::randomColor();
-	float ang = randFloat(0.0f, 2 * PI);
-	Polygon p = Polygon::regular(randInt(3, 15), center, params.width / 4, ang);
-	draw.poly(p, c);
+	c._a = params.alpha;
+	draw.poly(p, c, params.randWeight());
 }
 
 void runTest(const char* filename, drawFuncType drawFuncs[], int nFuncs = 1)
@@ -146,8 +159,8 @@ void polyTest(const char* filename)
 
 void mixedTest(const char* filename)
 {
-	const int kNumFuncs = 3;
-	drawFuncType funcs[3] = { drawCircle, drawRect, drawLine };
+	const int kNumFuncs = 4;
+	drawFuncType funcs[kNumFuncs] = { drawCircle, drawRect, drawLine, drawPoly };
 	runTest(filename, funcs, kNumFuncs);
 }
 

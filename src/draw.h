@@ -136,11 +136,73 @@ namespace Jil
 			}
 		}
 
-		void poly(Polygon const& shape, Color color)
+		void poly(Polygon const& shape, Color color, float lineWeight = 0.0f)
 		{
-			for (int i = 0; i < shape.verts.size(); i++)
+			if (shape.verts.size() < 3)
 			{
-				line(shape.verts[i], shape.verts[(i + 1) % shape.verts.size()], color);
+				return;
+			}
+
+			lineWeight = max(lineWeight, 0.0f);
+			int nVerts = shape.verts.size();
+
+			if (lineWeight != 0.0f)
+			{
+				for (int i = 0; i < nVerts; i++)
+				{
+					Vec2 const& cur = shape.verts[i];
+					Vec2 const& next = shape.verts[i + 1 == nVerts ? 0 : i + 1];
+					line(cur, next, color, lineWeight);
+				}
+			}
+			else
+			{
+				Vec2 minPos(shape.verts[0]);
+				Vec2 maxPos(shape.verts[0]);
+
+				std::vector<PolygonSide> sides;
+
+				for (int i = 0; i < nVerts; i++)
+				{
+					Vec2 const& cur = shape.verts[i];
+					Vec2 const& next = shape.verts[i + 1 == nVerts ? 0 : i + 1];
+
+					minPos.x = min(minPos.x, cur.x);
+					minPos.y = min(minPos.y, cur.y);
+					maxPos.x = max(maxPos.x, cur.x);
+					maxPos.y = max(maxPos.y, cur.y);
+
+					sides.push_back(PolygonSide(cur, next));
+				}
+
+				int xLo = max((int)minPos.x, 0);
+				int xHi = min((int)maxPos.x, _img->_width);
+				int yLo = max((int)minPos.y, 0);
+				int yHi = min((int)maxPos.y, _img->_height);
+
+				for (int i = xLo; i < xHi; i++)
+				{
+					for (int j = yLo; j < yHi; j++)
+					{
+						Vec2 p(i, j);
+						bool draw = false;
+						
+						for (int k = 0; k < nVerts; k++)
+						{
+							PolygonSide const& side = sides[k];
+							if (i >= side.xLo && i <= side.xHi &&
+								j >= side.m * i + side.b)
+							{
+								draw = !draw;
+							}
+						}
+
+						if (draw)
+						{
+							_img->blendPixel(i, j, color);
+						}
+					}
+				}
 			}
 		}
 	};
