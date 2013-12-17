@@ -97,7 +97,7 @@ namespace Jil
 				swap(start, end);
 			}
 
-			float rad = size / 2 + blur + 1;
+			float rad = size / 2 + blur / 2 + 1;
 			int xLo = max((int)(min(start.x, end.x) - rad), 0);
 			int xHi = min((int)(max(start.x, end.x) + rad), _img->_width);
 			int yLo = max((int)(min(start.y, end.y) - rad), 0);
@@ -121,9 +121,6 @@ namespace Jil
 				int yEnd = min(yMid + absM * rad + 1, (float)yHi);
 				for (int j = yStart; j < yEnd; ++j)
 				{
-						// _img->blendPixel(i, j, Color(0xff,0,0));
-						// _img->blendPixel(i, j, Color(0,0,0xff,
-						// 	lerp((float)(i - xLo) / (xHi - xLo), 0, 0xff)));
 					Vec2 C(i, j);
 					Vec2 D = lerp((C - start).dot(dir) / deltaDist, start, end);
 					float dist = (C - D).length();
@@ -131,8 +128,7 @@ namespace Jil
 					if (dist <= rad)
 					{
 						Color c = color;
-						c._a = lerp((dist - size / 2) / blur, (int)color._a, 0);
-						// _img->blendPixel(i, j, Color(0xff));
+						c._a = lerp((dist - size / 2 + blur / 2) / blur, (int)color._a, 0);
 						_img->blendPixel(i, j, c);
 					}
 				}
