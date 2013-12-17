@@ -53,6 +53,11 @@ namespace Jil
 		{
 			return x * other.x + y * other.y;
 		}
+
+		static Vec2 fromAngle(float angle, float length = 1.0f)
+		{
+			return Vec2(cos(angle), sin(angle)) * length;
+		}
 	};
 
 	Vec2 operator*(float scalar, Vec2 const& vec)

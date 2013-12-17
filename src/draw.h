@@ -1,6 +1,7 @@
 #include "util.h"
 #include "image.h"
 #include "vector.h"
+#include "polygon.h"
 
 #include <iostream>
 
@@ -132,6 +133,14 @@ namespace Jil
 						_img->blendPixel(i, j, c);
 					}
 				}
+			}
+		}
+
+		void poly(Polygon const& shape, Color color)
+		{
+			for (int i = 0; i < shape.verts.size(); i++)
+			{
+				line(shape.verts[i], shape.verts[(i + 1) % shape.verts.size()], color);
 			}
 		}
 	};

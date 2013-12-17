@@ -50,9 +50,9 @@ struct TestParams
 		randInt(midBlur / 2, 2 * midBlur); }
 };
 
-typedef void (*drawFuncType)(Draw&, TestParams const&);
+typedef void (*drawFuncType)(Draw&, TestParams&);
 
-void drawCircle(Draw& draw, TestParams const& params)
+void drawCircle(Draw& draw, TestParams& params)
 {
 	int x = params.randSizeX();
 	int y = params.randSizeY();
@@ -65,7 +65,7 @@ void drawCircle(Draw& draw, TestParams const& params)
 	draw.circle(x, y, r, c, l, b);	
 }
 
-void drawRect(Draw& draw, TestParams const& params)
+void drawRect(Draw& draw, TestParams& params)
 {
 	int x = params.randSizeX();
 	int y = params.randSizeY();
@@ -78,7 +78,7 @@ void drawRect(Draw& draw, TestParams const& params)
 	draw.rect(x, y, w, h, c, l);
 }
 
-void drawLine(Draw& draw, TestParams const& params)
+void drawLine(Draw& draw, TestParams& params)
 {
 	Vec2 A(params.randWeightX(),
 		params.randWeightY());
@@ -90,6 +90,17 @@ void drawLine(Draw& draw, TestParams const& params)
 	Color c = Color::randomColor();
 	c._a = params.alpha;
 	draw.line(A, B, c, l, b);
+}
+
+void drawPoly(Draw& draw, TestParams& params)
+{
+	params.count = 1;
+	Vec2 center = Vec2(params.width / 2, params.height / 2);
+
+	Color c = Color::randomColor();
+	float ang = randFloat(0.0f, 2 * PI);
+	Polygon p = Polygon::regular(randInt(3, 15), center, params.width / 4, ang);
+	draw.poly(p, c);
 }
 
 void runTest(const char* filename, drawFuncType drawFuncs[], int nFuncs = 1)
@@ -127,6 +138,12 @@ void lineTest(const char* filename)
 	runTest(filename, funcs);
 }
 
+void polyTest(const char* filename)
+{
+	drawFuncType funcs[1] = { drawPoly };
+	runTest(filename, funcs);
+}
+
 void mixedTest(const char* filename)
 {
 	const int kNumFuncs = 3;
@@ -146,16 +163,17 @@ int main(int argc, char** argv)
 	clock_t startClock = clock();
 	srand(time(0));
 
-	const int kNumTests = 4;
+	const int kNumTests = 5;
 	TestData validTests[kNumTests] =
 		{
 			{"circle", circleTest, 25},
 			{"rect", rectTest, 45},
 			{"line", lineTest, 25},
 			{"mixed", mixedTest, 50},
+			{"poly", polyTest, 25},
 		};
 
-	std::string testType = (argc > 1 ? argv[1] : "line");
+	std::string testType = (argc > 1 ? argv[1] : "mixed");
 
 	TestData* test = 0;
 	for (int i = 0; i < kNumTests; i++)

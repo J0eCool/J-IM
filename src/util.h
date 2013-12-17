@@ -5,6 +5,8 @@
 
 namespace Jil
 {
+	const float PI = 3.1415926f;
+
 	template <typename T>
 	void swap(T& a, T& b)
 	{
