@@ -1,7 +1,6 @@
 #include "image.h"
-#include "draw.h"
-#include "bmpFile.h"
 #include "vector.h"
+#include "tests.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -10,159 +9,6 @@
 #include <dirent.h>
 
 using namespace Jil;
-
-struct TestParams
-{
-	int width;
-	int height;
-	float midSize;
-	int alpha;
-	int count;
-	float midWeight;
-	float midBlur;
-	bool flag;
-
-	static TestParams getRandom()
-	{
-		TestParams params;
-
-		float imgAR = randBool(0.5f) ? randInt(6, 20) / 10.0f : 1;
-		params.width = (int)pow(2.0f, randInt(6, 12));
-		params.height = (int)(params.width / imgAR);
-
-		params.midSize = params.width / randInt(6, 18);
-		params.alpha = randBool(0.75f) ? 0x10 * randInt(0x4, 0x10) : 0xff;
-		params.count = 2 * params.width * 0xff
-			/ ((params.alpha / 2 + 0x80) * sqrt(params.midSize) * randFloat(0.5f, 3.5f));
-		params.midWeight = randInt(-8, 9);
-		params.midBlur = randBool(0.7f) ? 1.0f : randInt(2, 9);
-
-		params.flag = randBool(0.5f);
-
-		return params;
-	}
-
-	int randSizeX() const { return randInt(-midSize, width + midSize); }
-	int randSizeY() const { return randInt(-midSize, height + midSize); }
-	Vec2 randSizeVec() const { return Vec2(randSizeX(), randSizeY()); }
-	int randWeightX() const { return randInt(-midWeight, width + midWeight); }
-	int randWeightY() const { return randInt(-midWeight, height + midWeight); }
-	Vec2 randWeightVec() const { return Vec2(randWeightX(), randWeightY()); }
-
-	int randSize() const { return randInt(midSize / 2, 2 * midSize); }
-	int randWeight() const { return randInt(midWeight / 2, 2 * midWeight); }
-	int randBlur() const { return midBlur == 1.0f ? 1.0f :
-		randInt(midBlur / 2, 2 * midBlur); }
-};
-
-typedef void (*drawFuncType)(Draw&, TestParams&);
-
-void drawCircle(Draw& draw, TestParams& params)
-{
-	int x = params.randSizeX();
-	int y = params.randSizeY();
-	int r = params.randSize();
-	float l = params.randWeight();
-	float b = params.randBlur();
-
-	Color c = Color::randomColor();
-	c._a = params.alpha;
-	draw.circle(x, y, r, c, l, b);	
-}
-
-void drawRect(Draw& draw, TestParams& params)
-{
-	int x = params.randSizeX();
-	int y = params.randSizeY();
-	int w = params.randSize();
-	int h = params.randSize();
-	float l = params.randWeight();
-
-	Color c = Color::randomColor();
-	c._a = params.alpha;
-	draw.rect(x, y, w, h, c, l);
-}
-
-void drawLine(Draw& draw, TestParams& params)
-{
-	Vec2 A(params.randWeightVec());
-	Vec2 B(params.randWeightVec());
-	float l = fabs(params.randWeight());
-	float b = params.randBlur();
-
-	Color c = Color::randomColor();
-	c._a = params.alpha;
-	draw.line(A, B, c, l, b);
-}
-
-void drawPoly(Draw& draw, TestParams& params)
-{
-	Vec2 center = params.randSizeVec();
-	float ang = randFloat(0.0f, 2 * PI);
-	int sides = randInt(3, 15);
-	float size = params.randSize();
-	Polygon p;
-	if (params.flag)
-	{
-		p = Polygon::random(sides, center, size);
-	}
-	else
-	{
-		p = Polygon::regular(sides, center, size, ang);
-	}
-
-	Color c = Color::randomColor();
-	c._a = params.alpha;
-	draw.poly(p, c, params.randWeight());
-}
-
-void runTest(const char* filename, drawFuncType drawFuncs[], int nFuncs = 1)
-{
-	TestParams params = TestParams::getRandom();
-	Image img(params.width, params.height);
-	Draw draw(&img);
-
-	for (int i = 0; i < params.count; i++)
-	{
-		drawFuncType func = drawFuncs[randInt(0, nFuncs)];
-		func(draw, params);
-	}
-
-	BmpFile file(filename);
-	file.write(&img);
-}
-
-void circleTest(const char* filename)
-{
-	drawFuncType funcs[1] = { drawCircle };
-	runTest(filename, funcs);
-}
-
-void rectTest(const char* filename)
-{
-	drawFuncType funcs[1] = { drawRect };
-	runTest(filename, funcs);
-
-}
-
-void lineTest(const char* filename)
-{
-	drawFuncType funcs[1] = { drawLine };
-	runTest(filename, funcs);
-}
-
-void polyTest(const char* filename)
-{
-	drawFuncType funcs[1] = { drawPoly };
-	runTest(filename, funcs);
-}
-
-void mixedTest(const char* filename)
-{
-	const int kNumFuncs = 4;
-	drawFuncType funcs[kNumFuncs] = { drawCircle, drawRect, drawLine, drawPoly };
-	runTest(filename, funcs, kNumFuncs);
-}
 
 struct TestData
 {
@@ -176,7 +22,7 @@ int main(int argc, char** argv)
 	clock_t startClock = clock();
 	srand(time(0));
 
-	const int kNumTests = 5;
+	const int kNumTests = 6;
 	TestData validTests[kNumTests] =
 		{
 			{"circle", circleTest, 25},
@@ -184,6 +30,7 @@ int main(int argc, char** argv)
 			{"line", lineTest, 25},
 			{"mixed", mixedTest, 50},
 			{"poly", polyTest, 25},
+			{"generate", generateTest, 25},
 		};
 
 	std::string testType = (argc > 1 ? argv[1] : "mixed");
