@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 	clock_t startClock = clock();
 	srand(time(0));
 
-	const int kNumTests = 6;
+	const int kNumTests = 7;
 	TestData validTests[kNumTests] =
 		{
 			{"circle", circleTest, 25},
@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 			{"line", lineTest, 25},
 			{"mixed", mixedTest, 50},
 			{"poly", polyTest, 25},
+			{"blit", blitTest, 25},
 			{"generate", generateTest, 25},
 		};
 

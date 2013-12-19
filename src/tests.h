@@ -156,4 +156,45 @@ namespace Jil
 	{
 		runTest(filename, SingleTest(generate));
 	}
+
+	class BatchBlit : public TestObject
+	{
+	private:
+		Image _img;
+
+		static const int kImgSize = 32;
+
+	public:
+		BatchBlit() : _img(kImgSize, kImgSize)
+		{
+			const int kNumFuncs = 4;
+			drawFuncType funcs[kNumFuncs] = { drawCircle, drawRect, drawLine, drawPoly };
+			BatchTest mixBatch = BatchTest(funcs, kNumFuncs);
+			
+			Draw draw(&_img);
+			TestParams params = TestParams::getRandom(kImgSize, kImgSize);
+			for (int i = 0; i < 12; i++)
+			{
+				mixBatch.run(draw, params);
+			}
+		}
+
+		void run(Draw& draw, TestParams& params) const
+		{
+			for (int i = 0; i < params.count; i++)
+			{
+				int x = randInt(-kImgSize, draw.getImage()->_width + kImgSize);
+				int y = randInt(-kImgSize, draw.getImage()->_height + kImgSize);
+
+				// int x = randInt(30, draw.getImage()->_width - 30);
+				// int y = randInt(30, draw.getImage()->_height - 30);
+				draw.blit(_img, x, y);
+			}
+		}
+	};
+
+	void blitTest(const char* filename)
+	{
+		runTest(filename, BatchBlit());
+	}
 }

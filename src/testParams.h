@@ -16,13 +16,21 @@ namespace Jil
 		float midBlur;
 		bool flag;
 
-		static TestParams getRandom()
+		static TestParams getRandom(int width = -1, int height = -1)
 		{
 			TestParams params;
 
-			float imgAR = randBool(0.5f) ? randInt(6, 20) / 10.0f : 1;
-			params.width = (int)pow(2.0f, randInt(6, 12));
-			params.height = (int)(params.width / imgAR);
+			if (width <= 0.0f || height <= 0.0f)
+			{
+				float imgAR = randBool(0.5f) ? randInt(6, 20) / 10.0f : 1;
+				params.width = (int)pow(2.0f, randInt(6, 12));
+				params.height = (int)(params.width / imgAR);
+			}
+			else
+			{
+				params.width = width;
+				params.height = height;
+			}
 
 			params.midSize = params.width / randInt(6, 18);
 			params.alpha = randBool(0.75f) ? 0x10 * randInt(0x4, 0x10) : 0xff;

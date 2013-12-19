@@ -41,7 +41,7 @@ namespace Jil
 		Color blend(Color const& other) const
 		{
 			float amt = (float)other._a / kMax;
-			float newA = min(_a + amt / 2.0f, 1.0f);
+			float newA = min(_a + (int)(kMax * amt / 2.0f), 0xff);
 			int r = lerp(amt, _r, other._r);
 			int g = lerp(amt, _g, other._g);
 			int b = lerp(amt, _b, other._b);

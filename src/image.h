@@ -21,7 +21,7 @@ namespace Jil
 			delete _pixels;
 		}
 
-		Color const& getPixel(int x, int y)
+		Color const& getPixel(int x, int y) const
 		{
 			return _pixels[x + y * _width];
 		}

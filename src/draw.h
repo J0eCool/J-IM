@@ -15,6 +15,8 @@ namespace Jil
 	public:
 		Draw(Image* img) : _img(img) {}
 
+		const Image* getImage() const { return _img; }
+
 		void rect(int x, int y, int w, int h, Color color, float lineWeight = 0.0f)
 		{
 			if (lineWeight > 0.0f)
@@ -200,6 +202,38 @@ namespace Jil
 						if (draw)
 						{
 							_img->blendPixel(i, j, color);
+						}
+					}
+				}
+			}
+		}
+
+		void blit(Image const& other, int x, int y)
+		{
+			// *_img = other;
+			int xLo = max(x, 0);
+			int xHi = min(x + other._width, _img->_width);
+			int yLo = max(y, 0);
+			int yHi = min(y + other._height, _img->_height);
+
+			// int xLo = 0;
+			// int xHi = _img->_width;
+			// int yLo = 0;
+			// int yHi = _img->_height;
+
+			for (int i = xLo; i < xHi; ++i)
+			{
+				int ox = i - x;
+				if (ox >= 0 && ox < other._width)
+				{
+					for (int j = yLo; j < yHi; ++j)
+					{
+						int oy = j - y;
+						if (oy >= 0 && oy < other._height)
+						//if (_img)
+						{
+							_img->blendPixel(i, j, Color(0xff, 0, 0, 0x10));
+							_img->blendPixel(i, j, other.getPixel(ox, oy));
 						}
 					}
 				}
