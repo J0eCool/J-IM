@@ -69,17 +69,52 @@ namespace Jil
 		draw.poly(p, c, params.randWeight() * 0);
 	}
 
-	void runTest(const char* filename, drawFuncType drawFuncs[], int nFuncs = 1)
+	class TestObject
+	{
+	public:
+		virtual void run(Draw& draw, TestParams& params) const = 0;
+	};
+
+	class SingleTest : public TestObject
+	{
+	private:
+		drawFuncType _drawFunc;
+
+	public:
+		SingleTest(drawFuncType func) : _drawFunc(func) {}
+
+		void run(Draw& draw, TestParams& params) const
+		{
+			_drawFunc(draw, params);
+		}
+	};
+
+	class BatchTest : public TestObject
+	{
+	private:
+		drawFuncType* _drawFuncs;
+		int _nFuncs;
+
+	public:
+		BatchTest(drawFuncType* funcs, int count = 1) : _drawFuncs(funcs), _nFuncs(count) {}
+
+		void run(Draw& draw, TestParams& params) const
+		{
+			for (int i = 0; i < params.count; i++)
+			{
+				drawFuncType func = _drawFuncs[randInt(0, _nFuncs)];
+				func(draw, params);
+			}
+		}
+	};
+
+	void runTest(const char* filename, TestObject const& test)
 	{
 		TestParams params = TestParams::getRandom();
 		Image img(params.width, params.height);
 		Draw draw(&img);
 
-		for (int i = 0; i < params.count; i++)
-		{
-			drawFuncType func = drawFuncs[randInt(0, nFuncs)];
-			func(draw, params);
-		}
+		test.run(draw, params);
 
 		BmpFile file(filename);
 		file.write(&img);
@@ -88,38 +123,37 @@ namespace Jil
 	void circleTest(const char* filename)
 	{
 		drawFuncType funcs[1] = { drawCircle };
-		runTest(filename, funcs);
+		runTest(filename, BatchTest(funcs));
 	}
 
 	void rectTest(const char* filename)
 	{
 		drawFuncType funcs[1] = { drawRect };
-		runTest(filename, funcs);
+		runTest(filename, BatchTest(funcs));
 
 	}
 
 	void lineTest(const char* filename)
 	{
 		drawFuncType funcs[1] = { drawLine };
-		runTest(filename, funcs);
+		runTest(filename, BatchTest(funcs));
 	}
 
 	void polyTest(const char* filename)
 	{
 		drawFuncType funcs[1] = { drawPoly };
-		runTest(filename, funcs);
+		runTest(filename, BatchTest(funcs));
 	}
 
 	void mixedTest(const char* filename)
 	{
 		const int kNumFuncs = 4;
 		drawFuncType funcs[kNumFuncs] = { drawCircle, drawRect, drawLine, drawPoly };
-		runTest(filename, funcs, kNumFuncs);
+		runTest(filename, BatchTest(funcs, kNumFuncs));
 	}
 
 	void generateTest(const char* filename)
 	{
-		drawFuncType funcs[1] = { generate };
-		runTest(filename, funcs);
+		runTest(filename, SingleTest(generate));
 	}
 }

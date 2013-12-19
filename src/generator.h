@@ -10,8 +10,6 @@ namespace Jil
 
 	void generate(Draw& draw, TestParams& params)
 	{
-		params.count = 1;
-
 		int w = params.width;
 		int h = params.height;
 		int mid = w / 2;
