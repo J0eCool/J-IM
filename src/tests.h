@@ -72,7 +72,7 @@ namespace Jil
 	class TestObject
 	{
 	public:
-		virtual void run(Draw& draw, TestParams& params) const = 0;
+		virtual void operator()(Draw& draw, TestParams& params) const = 0;
 	};
 
 	class SingleTest : public TestObject
@@ -83,7 +83,7 @@ namespace Jil
 	public:
 		SingleTest(drawFuncType func) : _drawFunc(func) {}
 
-		void run(Draw& draw, TestParams& params) const
+		void operator()(Draw& draw, TestParams& params) const
 		{
 			_drawFunc(draw, params);
 		}
@@ -98,7 +98,7 @@ namespace Jil
 	public:
 		BatchTest(drawFuncType* funcs, int count = 1) : _drawFuncs(funcs), _nFuncs(count) {}
 
-		void run(Draw& draw, TestParams& params) const
+		void operator()(Draw& draw, TestParams& params) const
 		{
 			for (int i = 0; i < params.count; i++)
 			{
@@ -108,13 +108,14 @@ namespace Jil
 		}
 	};
 
-	void runTest(const char* filename, TestObject const& test)
+	template <typename F>
+	void runTest(const char* filename, F test)
 	{
 		TestParams params = TestParams::getRandom();
 		Image img(params.width, params.height);
 		Draw draw(&img);
 
-		test.run(draw, params);
+		test(draw, params);
 
 		BmpFile file(filename);
 		file.write(&img);
@@ -175,11 +176,11 @@ namespace Jil
 			TestParams params = TestParams::getRandom(kImgSize, kImgSize);
 			for (int i = 0; i < 12; i++)
 			{
-				mixBatch.run(draw, params);
+				mixBatch(draw, params);
 			}
 		}
 
-		void run(Draw& draw, TestParams& params) const
+		void operator()(Draw& draw, TestParams& params) const
 		{
 			for (int i = 0; i < params.count; i++)
 			{
